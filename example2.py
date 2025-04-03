@@ -413,6 +413,58 @@ async def add_rectangle_to_keynote(x1: int, y1: int, x2: int, y2: int) -> dict:
             ]
         }
 
+@mcp.tool()
+async def add_text_to_keynote(text: str) -> dict:
+    """Add text to the last created shape in the current Keynote slide"""
+    try:
+        # First, make sure Keynote is active
+        activate_script = """
+        tell application "Keynote"
+            activate
+            delay 0.5
+        end tell
+        """
+        subprocess.run(["osascript", "-e", activate_script])
+        await asyncio.sleep(0.5)  # Allow time for Keynote to activate
+        
+        # Use a simplified AppleScript that only sets the text content
+        # without trying to modify any text properties
+        add_text_script = f"""
+        tell application "Keynote"
+            tell front document
+                tell current slide
+                    -- Get the most recently added shape (last item in the shapes list)
+                    set lastShape to last item of shapes
+                    
+                    -- Add text to the shape (only set the text, no formatting)
+                    set object text of lastShape to "{text}"
+                end tell
+            end tell
+        end tell
+        """
+        
+        # Run the script to add text to the shape
+        subprocess.run(["osascript", "-e", add_text_script])
+        await asyncio.sleep(0.5)  # Give time for the text to be added
+        
+        return {
+            "content": [
+                {
+                    "type": "text",
+                    "text": f"Text '{text}' added to the most recent shape in Keynote"
+                }
+            ]
+        }
+    except Exception as e:
+        return {
+            "content": [
+                {
+                    "type": "text",
+                    "text": f"Error adding text to Keynote shape: {str(e)}"
+                }
+            ]
+        }
+
 # DEFINE RESOURCES
 
 # Add a dynamic greeting resource

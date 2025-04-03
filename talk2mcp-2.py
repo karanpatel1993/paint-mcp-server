@@ -286,15 +286,15 @@ Your entire response should be a single line starting with either FUNCTION_CALL:
                         )
                         print(result.content[0].text)
 
-                    #     # Draw rectangle and add text
-                    #     result = await session.call_tool(
-                    #         "add_text_in_paint",
-                    #         arguments={
-                    #             "text": response_text
-                    #         }
-                    #     )
-                    #     print(result.content[0].text)
-                    #     break
+                        # Draw rectangle and add text
+                        result = await session.call_tool(
+                            "add_text_to_keynote",
+                            arguments={
+                                "text": response_text
+                            }
+                        )
+                        print(result.content[0].text)
+                        break
 
                     iteration += 1
 
