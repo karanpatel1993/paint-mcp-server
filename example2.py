@@ -353,6 +353,66 @@ async def open_keynote() -> dict:
                 }
             ]
         }
+
+@mcp.tool()
+async def add_rectangle_to_keynote(x1: int, y1: int, x2: int, y2: int) -> dict:
+    """Add a rectangle to the current Keynote slide using direct object creation"""
+    try:
+        # Calculate width and height from coordinates
+        width = x2 - x1
+        height = y2 - y1
+        
+        # Make the rectangle bigger (1.5x larger) while keeping the same center
+        center_x = x1 + width/2
+        center_y = y1 + height/2
+        larger_width = width * 1.5
+        larger_height = height * 1.5
+        
+        # First, make sure Keynote is active
+        activate_script = """
+        tell application "Keynote"
+            activate
+            delay 0.5
+        end tell
+        """
+        subprocess.run(["osascript", "-e", activate_script])
+        await asyncio.sleep(0.5)  # Allow time for Keynote to activate
+        
+        # Use direct object creation which is more reliable
+        # We'll simplify the script to avoid color setting which is causing syntax errors
+        create_shape_script = f"""
+        tell application "Keynote"
+            tell front document
+                tell current slide
+                    -- Create a new rectangle shape directly with basic properties
+                    make new shape with properties {{width:{larger_width}, height:{larger_height}, position:{{{center_x}, {center_y}}}}}
+                end tell
+            end tell
+        end tell
+        """
+        
+        # Create the rectangle directly
+        subprocess.run(["osascript", "-e", create_shape_script])
+        await asyncio.sleep(0.5)  # Give time for the rectangle to be created
+        
+        return {
+            "content": [
+                {
+                    "type": "text",
+                    "text": f"Larger rectangle added to Keynote centered at ({center_x},{center_y}) with width {larger_width} and height {larger_height}"
+                }
+            ]
+        }
+    except Exception as e:
+        return {
+            "content": [
+                {
+                    "type": "text",
+                    "text": f"Error adding rectangle to Keynote: {str(e)}"
+                }
+            ]
+        }
+
 # DEFINE RESOURCES
 
 # Add a dynamic greeting resource
