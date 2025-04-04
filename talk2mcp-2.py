@@ -14,8 +14,8 @@ load_dotenv()
 api_key = os.getenv("GEMINI_API_KEY")
 client = genai.Client(api_key=api_key)
 
-# These will be set by user input
-max_iterations = 5
+# Global variables for the agent's state
+max_iterations = 10  # Default of 10 iterations
 last_response = None
 iteration = 0
 iteration_response = []
@@ -75,16 +75,8 @@ async def main():
     print("   - Identify and select a tool to open a presentation application")
     print("   - Find appropriate tools to create visual elements")
     print("   - Select tools to add content to the visualization")
-    print("You may need several iterations (5+) to complete all the steps.")
+    print(f"The agent will perform up to {max_iterations} iterations to complete the task.")
     print("You can include preferences in your query (e.g., 'small', 'centered', 'detailed').")
-    
-    # Get max iterations from user
-    global max_iterations
-    print("\nEnter maximum number of iterations (default: 5):")
-    user_max_iter = input().strip()
-    if user_max_iter.isdigit() and int(user_max_iter) > 0:
-        max_iterations = int(user_max_iter)
-    print(f"Maximum iterations set to: {max_iterations}")
     
     try:
         # Create a single MCP server connection
@@ -393,15 +385,11 @@ Your entire response should be a single line starting with either FUNCTION_CALL:
                             break
 
                     elif response_text.startswith("FINAL_ANSWER:"):
-                        print(f"\n=== In Iteration {iteration + 1} ===")
-                        print("Agent decided to provide a final answer")
                         # Extract the final answer
                         _, answer = response_text.split(":", 1)
+                        print(f"\n=== In Iteration {iteration + 1} ===")
+                        print("Agent decided to provide a final answer")
                         print(f"Result: {answer}")
-                        print("\nTo visualize this result, you could start a new query such as:")
-                        print(f"'Create a visualization for {answer.strip()}'")
-                        print(f"'Display {answer.strip()} visually using available tools'")
-                        print(f"'Visualize {answer.strip()} in a presentation'")
                         break
                     
                     iteration += 1
