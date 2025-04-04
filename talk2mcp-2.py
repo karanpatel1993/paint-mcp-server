@@ -54,25 +54,29 @@ def reset_state():
 
 async def main():
     reset_state()  # Reset at the start of main
-    print("Starting AI Agent with Keynote integration...")
-    print("This agent can solve mathematical problems and visualize results in Keynote.")
-    print("It can perform calculations, manipulate text, and display results visually.")
-    print("The agent can open applications, create visual elements, and add text to visualize results.")
+    print("Starting AI Agent...")
+    print("This agent can solve mathematical problems and create visual presentations.")
+    print("It analyzes and selects from available tools to accomplish each task.")
+    print("For visualization, it will identify appropriate tools for each step of the process.")
     
     print("\nExample queries you can try:")
     print("1. Find the ASCII values of characters in HELLO and then return sum of exponentials of those values.")
-    print("2. Calculate the fibonacci sequence for n=10 and create a visual presentation of the result.")
-    print("3. Calculate 24 factorial and display the answer visually.")
-    print("4. What is the sine of 45 degrees? Create a visual presentation of this result.")
-    print("5. Find the remainder when 2^10 is divided by 7 and show it in a presentation.")
-    print("6. Calculate the factorial of 10 and display it in a small centered visual element.")
-    print("\nNote: For visualization queries, the agent will approach the task step by step:")
-    print("- First performing calculations")
-    print("- Then opening an appropriate application")
-    print("- Creating a visual container for the result")
-    print("- Adding informative text")
-    print("For visualization queries, you need several iterations to complete all steps.")
-    print("You can include presentation preferences in your query (e.g., 'small', 'centered', 'detailed').")
+    print("2. Calculate the fibonacci sequence for n=10 and create a visualization of the result.")
+    print("3. Calculate 24 factorial and find a way to display the answer visually.")
+    print("4. What is the sine of 45 degrees? Create a visual presentation.")
+    print("5. Find the remainder when 2^10 is divided by 7 and create a nice visualization.")
+    print("6. Calculate the factorial of 10 and display it visually in a small centered element.")
+    print("\nHow the agent works:")
+    print("1. It analyzes your query to understand what you're asking")
+    print("2. It examines all available tools to identify the most appropriate ones")
+    print("3. For each step, it selects and executes a specific tool")
+    print("4. For visualization tasks, it will:")
+    print("   - Select tools for mathematical calculations first")
+    print("   - Identify and select a tool to open a presentation application")
+    print("   - Find appropriate tools to create visual elements")
+    print("   - Select tools to add content to the visualization")
+    print("You may need several iterations (5+) to complete all the steps.")
+    print("You can include preferences in your query (e.g., 'small', 'centered', 'detailed').")
     
     # Get max iterations from user
     global max_iterations
@@ -120,12 +124,31 @@ async def main():
                             desc = getattr(tool, 'description', 'No description available')
                             name = getattr(tool, 'name', f'tool_{i}')
                             
+                            # Enhance descriptions for visualization-related tools
+                            if name == "open_keynote":
+                                desc = "Opens Apple Keynote presentation software with a blank slide, perfect for starting a visual presentation"
+                            elif name == "add_rectangle_to_keynote":
+                                desc = "Creates a visual container (rectangle) on the current Keynote slide at specified coordinates (x1,y1,x2,y2) - useful for framing content"
+                            elif name == "add_text_to_keynote":
+                                desc = "Adds text to the most recently created shape in Keynote - ideal for displaying results with explanations"
+                            
                             # Format the input schema in a more readable way
                             if 'properties' in params:
                                 param_details = []
                                 for param_name, param_info in params['properties'].items():
                                     param_type = param_info.get('type', 'unknown')
-                                    param_details.append(f"{param_name}: {param_type}")
+                                    param_desc = ""
+                                    
+                                    # Add parameter descriptions for visualization tools
+                                    if name == "add_rectangle_to_keynote":
+                                        if param_name in ["x1", "y1"]:
+                                            param_desc = " (top-left corner)"
+                                        elif param_name in ["x2", "y2"]:
+                                            param_desc = " (bottom-right corner)"
+                                    elif name == "add_text_to_keynote" and param_name == "text":
+                                        param_desc = " (content to display)"
+                                        
+                                    param_details.append(f"{param_name}: {param_type}{param_desc}")
                                 params_str = ', '.join(param_details)
                             else:
                                 params_str = 'no parameters'
@@ -145,7 +168,7 @@ async def main():
                 
                 print("Created system prompt...")
                 
-                system_prompt = f"""You are a versatile agent solving problems and visualizing results. You have access to various mathematical tools and visualization capabilities in Apple Keynote.
+                system_prompt = f"""You are a versatile agent solving problems and creating visualizations on a Mac computer. You have access to various mathematical tools and Mac applications through available functions.
 
 Available tools:
 {tools_description}
@@ -160,34 +183,28 @@ You must respond with EXACTLY ONE line in one of these formats (no additional te
 Important:
 - When a function returns multiple values, you need to process all of them
 - Only give FINAL_ANSWER when you have completed all necessary calculations
-- When visualizing results, consider a general approach:
-  1. First open the appropriate application to host your visualization
-  2. Find or create a suitable area to display the content (like a shape or container)
-  3. Add the relevant information as text so the user can see the results
-- When adding visual elements, try to make them:
-  * Appropriately sized (not too large or small)
-  * Well-positioned (centered or aligned properly)
-  * Clear and readable (with descriptive text)
-- Your available tools include functions to work with Apple Keynote
-- When adding text, make sure it includes both the answer and any relevant explanation
+- When visualizing results, explore the available tools to find those that can:
+  * Open Mac applications
+  * Create visual elements
+  * Add text or other content
+- Choose the best tools for the task based on their descriptions
+- Remember that good visualizations typically involve:
+  * A suitable application to host the content
+  * Visual elements of appropriate size and position
+  * Clear text that explains the result
 - Do not repeat function calls with the same parameters
 
 Examples:
 - FUNCTION_CALL: add|5|3
 - FUNCTION_CALL: strings_to_chars_to_int|INDIA
-- FUNCTION_CALL: open_keynote
-- FUNCTION_CALL: add_rectangle_to_keynote|350|250|650|450
-- FUNCTION_CALL: add_text_to_keynote|The factorial of 5 is 120
 - FINAL_ANSWER: [42]
 
 Query Analysis:
-- If the query mentions visualization or presentation, consider how to visually represent the result
+- Carefully examine all available tools to understand their capabilities
+- If the query mentions visualization or presentation, look for tools that can help with creating visuals
 - If the query is only about calculations without mentioning visualization, use FINAL_ANSWER
 - Always perform the necessary calculations first before attempting any visualization
-- Listen for cues about presentation preferences:
-  * Size preferences like "small" or "large"
-  * Position preferences like "centered" or "at the top"
-  * Style preferences like "simple" or "detailed"
+- Pay attention to specific requirements in the query like size, position, or style preferences
 
 DO NOT include any explanations or additional text.
 Your entire response should be a single line starting with either FUNCTION_CALL: or FINAL_ANSWER:"""
@@ -195,9 +212,9 @@ Your entire response should be a single line starting with either FUNCTION_CALL:
                 # Get user query
                 print("\nEnter your query (or use default if empty):")
                 user_query = input().strip()
-                query = user_query if user_query else "Find the ASCII values of characters in INDIA and then return sum of exponentials of those values and create a visual presentation of the result"
+                query = user_query if user_query else "Find the ASCII values of characters in INDIA and then return sum of exponentials of those values and create a nice visual presentation of the result"
                 print(f"\nProcessing query: {query}")
-                print("Starting iteration loop...")
+                print("Starting the agent's decision-making process...")
                 
                 # Use global iteration variables
                 global iteration, last_response
@@ -206,17 +223,19 @@ Your entire response should be a single line starting with either FUNCTION_CALL:
                     print(f"\n--- Iteration {iteration + 1} ---")
                     if last_response is None:
                         current_query = query
+                        print("Agent is deciding which tool to use for the initial task...")
                     else:
                         current_query = current_query + "\n\n" + " ".join(iteration_response)
                         current_query = current_query + "  What should I do next?"
+                        print("Agent is deciding which tool to select next based on previous results...")
 
                     # Get model's response with timeout
-                    print("Preparing to generate LLM response...")
+                    print("Preparing to generate decision...")
                     prompt = f"{system_prompt}\n\nQuery: {current_query}"
                     try:
                         response = await generate_with_timeout(client, prompt)
                         response_text = response.text.strip()
-                        print(f"LLM Response: {response_text}")
+                        print(f"Agent's decision: {response_text}")
                         
                         # Find the FUNCTION_CALL line in the response
                         for line in response_text.split('\n'):
@@ -226,7 +245,7 @@ Your entire response should be a single line starting with either FUNCTION_CALL:
                                 break
                         
                     except Exception as e:
-                        print(f"Failed to get LLM response: {e}")
+                        print(f"Failed to get agent's decision: {e}")
                         break
 
 
@@ -235,20 +254,18 @@ Your entire response should be a single line starting with either FUNCTION_CALL:
                         parts = [p.strip() for p in function_info.split("|")]
                         func_name, params = parts[0], parts[1:]
                         
-                        print(f"\nDEBUG: Raw function info: {function_info}")
-                        print(f"DEBUG: Split parts: {parts}")
-                        print(f"DEBUG: Function name: {func_name}")
-                        print(f"DEBUG: Raw parameters: {params}")
+                        print(f"\nDEBUG: Tool chosen by agent: {func_name}")
+                        print(f"DEBUG: Parameters for execution: {params}")
                         
                         try:
                             # Find the matching tool to get its input schema
                             tool = next((t for t in tools if t.name == func_name), None)
                             if not tool:
-                                print(f"DEBUG: Available tools: {[t.name for t in tools]}")
+                                print(f"DEBUG: Available tools that could have been chosen: {[t.name for t in tools]}")
                                 raise ValueError(f"Unknown tool: {func_name}")
 
-                            print(f"DEBUG: Found tool: {tool.name}")
-                            print(f"DEBUG: Tool schema: {tool.inputSchema}")
+                            print(f"DEBUG: Preparing to execute tool: {tool.name}")
+                            print(f"DEBUG: Tool schema for parameter validation: {tool.inputSchema}")
 
                             # Prepare arguments according to the tool's input schema
                             arguments = {}
@@ -278,10 +295,10 @@ Your entire response should be a single line starting with either FUNCTION_CALL:
                                     arguments[param_name] = str(value)
 
                             print(f"DEBUG: Final arguments: {arguments}")
-                            print(f"DEBUG: Calling tool {func_name}")
+                            print(f"DEBUG: Executing tool now: {func_name}")
                             
                             result = await session.call_tool(func_name, arguments=arguments)
-                            print(f"DEBUG: Raw result: {result}")
+                            print(f"DEBUG: Execution completed, processing result...")
                             
                             # Get the full result content
                             if hasattr(result, 'content'):
@@ -308,13 +325,14 @@ Your entire response should be a single line starting with either FUNCTION_CALL:
                             
                             # Provide more context when Keynote functions are called
                             if func_name == "open_keynote":
-                                print("\n=== Starting Visualization Process ===")
-                                print("Opening presentation application...")
+                                print(f"\n=== In Iteration {iteration + 1} ===")
+                                print(f"Agent selected and executed: {func_name}")
+                                print("Result: Presentation application opened")
                                 
                                 iteration_response.append(
-                                    f"In iteration {iteration + 1}, I opened a presentation application to prepare for visualization. "
-                                    f"The function returned: {result_str}. "
-                                    f"Next, I'll create an appropriate visual element to display the result."
+                                    f"In iteration {iteration + 1}, I analyzed the available tools and selected '{func_name}' to begin visualization. "
+                                    f"After executing this tool, the result was: {result_str}. "
+                                    f"I'll now examine the remaining tools to find one suitable for creating a visual element."
                                 )
                             elif func_name == "add_rectangle_to_keynote":
                                 # Calculate rectangle size and position
@@ -327,31 +345,41 @@ Your entire response should be a single line starting with either FUNCTION_CALL:
                                 center_x = x1 + width/2
                                 center_y = y1 + height/2
                                 
-                                print("Creating visual container for the result...")
+                                print(f"\n=== In Iteration {iteration + 1} ===")
+                                print(f"Agent selected and executed: {func_name}")
+                                print("Result: Visual container created")
                                 print(f"   Size: {width}x{height} pixels")
                                 print(f"   Position: centered at ({center_x}, {center_y})")
                                 
                                 iteration_response.append(
-                                    f"In iteration {iteration + 1}, I created a visual container with dimensions {width}x{height} "
-                                    f"at position ({center_x}, {center_y}). "
-                                    f"The function returned: {result_str}. "
-                                    f"Now I'll add the result text to this container."
+                                    f"In iteration {iteration + 1}, after reviewing the available tools, I selected '{func_name}' to create a visual container. "
+                                    f"I configured a shape with dimensions {width}x{height} at position ({center_x}, {center_y}). "
+                                    f"After execution, the result was: {result_str}. "
+                                    f"Next, I'll review the available tools to find one that can add textual content."
                                 )
                             elif func_name == "add_text_to_keynote":
-                                print("Adding result text to the visual container...")
+                                print(f"\n=== In Iteration {iteration + 1} ===")
+                                print(f"Agent selected and executed: {func_name}")
+                                print("Result: Text added to the visual element")
                                 print(f"   Text: '{arguments.get('text', '')}'")
-                                print("\n=== Visualization Complete ===")
+                                print("\n=== Visualization Process Complete ===")
                                 
                                 iteration_response.append(
-                                    f"In iteration {iteration + 1}, I added the text '{arguments.get('text', 'unknown')}' to the visual container. "
-                                    f"The function returned: {result_str}. "
-                                    f"The visualization is now complete and displays the result."
+                                    f"In iteration {iteration + 1}, I analyzed the remaining tools and selected '{func_name}' to add content. "
+                                    f"I applied the text '{arguments.get('text', 'unknown')}' to display the result. "
+                                    f"After execution, the result was: {result_str}. "
+                                    f"With this step complete, the visualization now contains all the necessary information."
                                 )
                             else:
                                 # Default response for other function calls
+                                print(f"\n=== In Iteration {iteration + 1} ===")
+                                print(f"Agent selected and executed: {func_name}")
+                                print(f"Parameters used: {arguments}")
+                                print(f"Result: Operation completed")
+                                
                                 iteration_response.append(
-                                    f"In iteration {iteration + 1}, I called {func_name} with {arguments} parameters, "
-                                    f"and the function returned {result_str}."
+                                    f"In iteration {iteration + 1}, I selected the '{func_name}' tool with parameters {arguments}. "
+                                    f"After execution, the result was: {result_str}."
                                 )
                             
                             last_response = iteration_result
@@ -365,14 +393,15 @@ Your entire response should be a single line starting with either FUNCTION_CALL:
                             break
 
                     elif response_text.startswith("FINAL_ANSWER:"):
-                        print("\n=== Agent Execution Complete ===")
+                        print(f"\n=== In Iteration {iteration + 1} ===")
+                        print("Agent decided to provide a final answer")
                         # Extract the final answer
                         _, answer = response_text.split(":", 1)
-                        print(f"Final Answer: {answer}")
-                        print("\nTo visualize this result, try a new query like:")
-                        print(f"'Create a visual presentation of {answer.strip()}'")
-                        print(f"'Display {answer.strip()} visually'")
-                        print(f"'Show this result in a presentation'")
+                        print(f"Result: {answer}")
+                        print("\nTo visualize this result, you could start a new query such as:")
+                        print(f"'Create a visualization for {answer.strip()}'")
+                        print(f"'Use available visualization tools to display {answer.strip()}'")
+                        print(f"'Select appropriate tools to visualize {answer.strip()} in a presentation'")
                         break
                     
                     iteration += 1
