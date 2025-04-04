@@ -66,6 +66,8 @@ async def main():
     print("4. What is the sine of 45 degrees? Create a visual presentation.")
     print("5. Find the remainder when 2^10 is divided by 7 and create a nice visualization.")
     print("6. Calculate the factorial of 10 and display it visually in a small centered element.")
+    print("7. Calculate the sum of the first 20 prime numbers and email me the result.")
+    print("8. Compute 15! and create a visualization, then share the result via email.")
     print("\nHow the agent works:")
     print("1. It analyzes your query to understand what you're asking")
     print("2. It examines all available tools to identify the most appropriate ones")
@@ -116,14 +118,6 @@ async def main():
                             desc = getattr(tool, 'description', 'No description available')
                             name = getattr(tool, 'name', f'tool_{i}')
                             
-                            # Enhance descriptions for visualization-related tools
-                            if name == "open_keynote":
-                                desc = "Opens a presentation software with a blank slide, perfect for starting a visual presentation"
-                            elif name == "add_rectangle_to_keynote":
-                                desc = "Creates a visual container (rectangle) on the current presentation slide at specified coordinates (x1,y1,x2,y2) - useful for framing content"
-                            elif name == "add_text_to_keynote":
-                                desc = "Adds text to the most recently created shape in the presentation - ideal for displaying results with explanations"
-                            
                             # Format the input schema in a more readable way
                             if 'properties' in params:
                                 param_details = []
@@ -139,7 +133,11 @@ async def main():
                                             param_desc = " (bottom-right corner)"
                                     elif name == "add_text_to_keynote" and param_name == "text":
                                         param_desc = " (content to display)"
-                                        
+                                    elif name == "send_email_with_result":
+                                        if param_name == "result":
+                                            param_desc = " (the final answer or calculation result to share)"
+                                        elif param_name == "subject":
+                                            param_desc = " (optional email subject line)"
                                     param_details.append(f"{param_name}: {param_type}{param_desc}")
                                 params_str = ', '.join(param_details)
                             else:
@@ -184,18 +182,24 @@ Important:
   * A suitable application to host the content
   * Visual elements of appropriate size and position
   * Clear text that explains the result
+- Email functionality should only be used when:
+  * The user explicitly mentions sharing, sending, emailing, or notifying in their query
+  * The calculation is complete and you have a final result to share
+  * The email should contain the complete calculation result for reference
 - Do not repeat function calls with the same parameters
 
 Examples:
 - FUNCTION_CALL: add|5|3
 - FUNCTION_CALL: strings_to_chars_to_int|INDIA
+- FUNCTION_CALL: send_email_with_result|The factorial of 10 is 3628800|Factorial Calculation Result
 - FINAL_ANSWER: [42]
 
 Query Analysis:
 - Carefully examine all available tools to understand their capabilities
 - If the query mentions visualization or presentation, look for tools that can help with creating visuals
 - If the query is only about calculations without mentioning visualization, use FINAL_ANSWER
-- Always perform the necessary calculations first before attempting any visualization
+- If the query contains terms like "share", "send", "email", or "notify", consider using email functionality
+- Always perform the necessary calculations first before attempting any visualization or sharing
 - Pay attention to specific requirements in the query like size, position, or style preferences
 
 DO NOT include any explanations or additional text.
@@ -361,6 +365,20 @@ Your entire response should be a single line starting with either FUNCTION_CALL:
                                     f"I applied the text '{arguments.get('text', 'unknown')}' to display the result. "
                                     f"After execution, the result was: {result_str}. "
                                     f"With this step complete, the visualization now contains all the necessary information."
+                                )
+                            elif func_name == "send_email_with_result":
+                                print(f"\n=== In Iteration {iteration + 1} ===")
+                                print(f"Agent selected and executed: {func_name}")
+                                print("Result: Email sent with calculation result")
+                                print(f"   Result shared: '{arguments.get('result', '')}'")
+                                print(f"   Subject: '{arguments.get('subject', 'Calculation Result')}'")
+                                print("\n=== Sharing Process Complete ===")
+                                
+                                iteration_response.append(
+                                    f"In iteration {iteration + 1}, I analyzed the available tools and selected '{func_name}' to share the result. "
+                                    f"I sent an email containing the result '{arguments.get('result', 'unknown')}' with subject '{arguments.get('subject', 'Calculation Result')}'. "
+                                    f"After execution, the result was: {result_str}. "
+                                    f"With this step complete, the results have been successfully shared via email."
                                 )
                             else:
                                 # Default response for other function calls
