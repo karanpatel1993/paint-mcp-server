@@ -126,11 +126,11 @@ async def main():
                             
                             # Enhance descriptions for visualization-related tools
                             if name == "open_keynote":
-                                desc = "Opens Apple Keynote presentation software with a blank slide, perfect for starting a visual presentation"
+                                desc = "Opens a presentation software with a blank slide, perfect for starting a visual presentation"
                             elif name == "add_rectangle_to_keynote":
-                                desc = "Creates a visual container (rectangle) on the current Keynote slide at specified coordinates (x1,y1,x2,y2) - useful for framing content"
+                                desc = "Creates a visual container (rectangle) on the current presentation slide at specified coordinates (x1,y1,x2,y2) - useful for framing content"
                             elif name == "add_text_to_keynote":
-                                desc = "Adds text to the most recently created shape in Keynote - ideal for displaying results with explanations"
+                                desc = "Adds text to the most recently created shape in the presentation - ideal for displaying results with explanations"
                             
                             # Format the input schema in a more readable way
                             if 'properties' in params:
@@ -168,7 +168,7 @@ async def main():
                 
                 print("Created system prompt...")
                 
-                system_prompt = f"""You are a versatile agent solving problems and creating visualizations on a Mac computer. You have access to various mathematical tools and Mac applications through available functions.
+                system_prompt = f"""You are a versatile agent solving problems and creating visualizations. You have access to various mathematical tools and visualization applications through available functions.
 
 Available tools:
 {tools_description}
@@ -184,7 +184,7 @@ Important:
 - When a function returns multiple values, you need to process all of them
 - Only give FINAL_ANSWER when you have completed all necessary calculations
 - When visualizing results, explore the available tools to find those that can:
-  * Open Mac applications
+  * Open presentation applications
   * Create visual elements
   * Add text or other content
 - Choose the best tools for the task based on their descriptions
@@ -212,7 +212,7 @@ Your entire response should be a single line starting with either FUNCTION_CALL:
                 # Get user query
                 print("\nEnter your query (or use default if empty):")
                 user_query = input().strip()
-                query = user_query if user_query else "Find the ASCII values of characters in INDIA and then return sum of exponentials of those values and create a nice visual presentation of the result"
+                query = user_query if user_query else "Find the ASCII values of characters in INDIA and then return sum of exponentials of those values and create a visual presentation of the result"
                 print(f"\nProcessing query: {query}")
                 print("Starting the agent's decision-making process...")
                 
@@ -323,7 +323,7 @@ Your entire response should be a single line starting with either FUNCTION_CALL:
                             else:
                                 result_str = str(iteration_result)
                             
-                            # Provide more context when Keynote functions are called
+                            # Provide more context when visualization functions are called
                             if func_name == "open_keynote":
                                 print(f"\n=== In Iteration {iteration + 1} ===")
                                 print(f"Agent selected and executed: {func_name}")
@@ -400,8 +400,8 @@ Your entire response should be a single line starting with either FUNCTION_CALL:
                         print(f"Result: {answer}")
                         print("\nTo visualize this result, you could start a new query such as:")
                         print(f"'Create a visualization for {answer.strip()}'")
-                        print(f"'Use available visualization tools to display {answer.strip()}'")
-                        print(f"'Select appropriate tools to visualize {answer.strip()} in a presentation'")
+                        print(f"'Display {answer.strip()} visually using available tools'")
+                        print(f"'Visualize {answer.strip()} in a presentation'")
                         break
                     
                     iteration += 1
