@@ -14,7 +14,8 @@ load_dotenv()
 api_key = os.getenv("GEMINI_API_KEY")
 client = genai.Client(api_key=api_key)
 
-max_iterations = 3
+# These will be set by user input
+max_iterations = 5
 last_response = None
 iteration = 0
 iteration_response = []
@@ -53,10 +54,37 @@ def reset_state():
 
 async def main():
     reset_state()  # Reset at the start of main
-    print("Starting main execution...")
+    print("Starting AI Agent with Keynote integration...")
+    print("This agent can solve mathematical problems and visualize results in Keynote.")
+    print("It can perform calculations, manipulate text, and display results visually.")
+    print("The agent can open Keynote, create shapes, and add text to visualize your results.")
+    
+    print("\nExample queries you can try:")
+    print("1. Find the ASCII values of characters in HELLO and then return sum of exponentials of those values.")
+    print("2. Calculate the fibonacci sequence for n=10 and visualize it in Keynote.")
+    print("3. Calculate 24 factorial and display the result in a Keynote presentation.")
+    print("4. What is the sine of 45 degrees? Show this in Keynote.")
+    print("5. Find the remainder when 2^10 is divided by 7 and visualize it in Keynote.")
+    print("6. Calculate the factorial of 10 and show it in a small centered rectangle in Keynote.")
+    print("\nNote: For visualization queries, the agent will make multiple function calls in sequence:")
+    print("- First to perform calculations")
+    print("- Then to open Keynote")
+    print("- Then to create a rectangle")
+    print("- Finally to add text with the result")
+    print("For visualization queries, you need at least 5 iterations (calculations + 3 Keynote steps).")
+    print("You can also request specific rectangle sizes/positions by including terms like 'small', 'centered', etc.")
+    
+    # Get max iterations from user
+    global max_iterations
+    print("\nEnter maximum number of iterations (default: 5):")
+    user_max_iter = input().strip()
+    if user_max_iter.isdigit() and int(user_max_iter) > 0:
+        max_iterations = int(user_max_iter)
+    print(f"Maximum iterations set to: {max_iterations}")
+    
     try:
         # Create a single MCP server connection
-        print("Establishing connection to MCP server...")
+        print("\nConnecting to MCP server...")
         server_params = StdioServerParameters(
             command="python3",
             args=["example2.py"]
@@ -117,7 +145,7 @@ async def main():
                 
                 print("Created system prompt...")
                 
-                system_prompt = f"""You are a math agent solving problems in iterations. You have access to various mathematical tools.
+                system_prompt = f"""You are a versatile agent solving problems and visualizing results. You have access to various mathematical tools and visualization capabilities in Apple Keynote.
 
 Available tools:
 {tools_description}
@@ -132,17 +160,43 @@ You must respond with EXACTLY ONE line in one of these formats (no additional te
 Important:
 - When a function returns multiple values, you need to process all of them
 - Only give FINAL_ANSWER when you have completed all necessary calculations
+- To visualize results in Keynote, use these function calls in sequence:
+  1. First call open_keynote to create a blank Keynote document
+  2. Then call add_rectangle_to_keynote with coordinates (x1,y1,x2,y2)
+  3. Finally call add_text_to_keynote with your text content
+- For the rectangle, use these guidelines:
+  * Create a moderately sized rectangle (approx. 300x200 pixels)
+  * Center it on the slide (around position 500,350)
+  * Example coordinates: x1=350, y1=250, x2=650, y2=450
+- When adding text, make sure it includes both the answer and any relevant explanation
 - Do not repeat function calls with the same parameters
 
 Examples:
 - FUNCTION_CALL: add|5|3
 - FUNCTION_CALL: strings_to_chars_to_int|INDIA
+- FUNCTION_CALL: open_keynote
+- FUNCTION_CALL: add_rectangle_to_keynote|350|250|650|450
+- FUNCTION_CALL: add_text_to_keynote|The factorial of 5 is 120
 - FINAL_ANSWER: [42]
+
+Query Analysis:
+- If the query contains words like "keynote", "visualize", "show", "display", "presentation", use the Keynote functions in sequence
+- If the query is only about calculations without mentioning visualization, use FINAL_ANSWER
+- Always perform the necessary calculations first using mathematical FUNCTION_CALLs before visualizing
+- Pay attention to rectangle size and position requests:
+  * If the query mentions "small" rectangle, use dimensions around 300x200 pixels
+  * If the query mentions "centered" or "center", place the rectangle in the center of the slide
+  * If the query mentions "large", use dimensions around 600x400 pixels
+  * Default position should be in the center of the slide (around 500,350)
 
 DO NOT include any explanations or additional text.
 Your entire response should be a single line starting with either FUNCTION_CALL: or FINAL_ANSWER:"""
 
-                query = """Find the ASCII values of characters in INDIA and then return sum of exponentials of those values. """
+                # Get user query
+                print("\nEnter your query (or use default if empty):")
+                user_query = input().strip()
+                query = user_query if user_query else "Find the ASCII values of characters in INDIA and then return sum of exponentials of those values and visualize them in a small centered rectangle in Keynote"
+                print(f"\nProcessing query: {query}")
                 print("Starting iteration loop...")
                 
                 # Use global iteration variables
@@ -252,10 +306,51 @@ Your entire response should be a single line starting with either FUNCTION_CALL:
                             else:
                                 result_str = str(iteration_result)
                             
-                            iteration_response.append(
-                                f"In the {iteration + 1} iteration you called {func_name} with {arguments} parameters, "
-                                f"and the function returned {result_str}."
-                            )
+                            # Provide more context when Keynote functions are called
+                            if func_name == "open_keynote":
+                                print("\n=== Starting Keynote Visualization Process ===")
+                                print("Step 1: Opening Keynote with a blank slide...")
+                                
+                                iteration_response.append(
+                                    f"In iteration {iteration + 1}, I opened Keynote with a blank slide. The function returned: {result_str}. "
+                                    f"Now I'll create a rectangle to display the result."
+                                )
+                            elif func_name == "add_rectangle_to_keynote":
+                                # Calculate rectangle size and position
+                                x1 = arguments.get('x1', 0)
+                                y1 = arguments.get('y1', 0)
+                                x2 = arguments.get('x2', 0)
+                                y2 = arguments.get('y2', 0)
+                                width = x2 - x1
+                                height = y2 - y1
+                                center_x = x1 + width/2
+                                center_y = y1 + height/2
+                                
+                                print(f"Step 2: Creating a rectangle for the visualization...")
+                                print(f"   Size: {width}x{height} pixels")
+                                print(f"   Position: centered at ({center_x}, {center_y})")
+                                
+                                iteration_response.append(
+                                    f"In iteration {iteration + 1}, I created a rectangle in Keynote with dimensions {width}x{height} "
+                                    f"centered at coordinates ({center_x}, {center_y}). "
+                                    f"The function returned: {result_str}. Now I'll add text to the rectangle."
+                                )
+                            elif func_name == "add_text_to_keynote":
+                                print("Step 3: Adding text with the result...")
+                                print(f"   Text: '{arguments.get('text', '')}'")
+                                print("\n=== Keynote Visualization Complete ===")
+                                
+                                iteration_response.append(
+                                    f"In iteration {iteration + 1}, I added the text '{arguments.get('text', 'unknown')}' to the rectangle. "
+                                    f"The function returned: {result_str}. The visualization in Keynote is now complete."
+                                )
+                            else:
+                                # Default response for other function calls
+                                iteration_response.append(
+                                    f"In iteration {iteration + 1}, I called {func_name} with {arguments} parameters, "
+                                    f"and the function returned {result_str}."
+                                )
+                            
                             last_response = iteration_result
 
                         except Exception as e:
@@ -268,34 +363,15 @@ Your entire response should be a single line starting with either FUNCTION_CALL:
 
                     elif response_text.startswith("FINAL_ANSWER:"):
                         print("\n=== Agent Execution Complete ===")
-                        result = await session.call_tool("open_keynote")
-                        print(result.content[0].text)
-
-                        # Wait longer for Paint to be fully maximized
-                        await asyncio.sleep(1)
-
-                        # Draw a rectangle
-                        result = await session.call_tool(
-                            "add_rectangle_to_keynote",
-                            arguments={
-                                "x1": 780,
-                                "y1": 380,
-                                "x2": 1140,
-                                "y2": 700
-                            }
-                        )
-                        print(result.content[0].text)
-
-                        # Draw rectangle and add text
-                        result = await session.call_tool(
-                            "add_text_to_keynote",
-                            arguments={
-                                "text": response_text
-                            }
-                        )
-                        print(result.content[0].text)
+                        # Extract the final answer
+                        _, answer = response_text.split(":", 1)
+                        print(f"Final Answer: {answer}")
+                        print("\nTo visualize this result in Keynote, try a new query like:")
+                        print(f"'Visualize the result {answer.strip()} in Keynote'")
+                        print(f"'Show {answer.strip()} in a small centered rectangle in Keynote'")
+                        print(f"'Display {answer.strip()} in a Keynote presentation with a centered rectangle'")
                         break
-
+                    
                     iteration += 1
 
     except Exception as e:
