@@ -55,9 +55,10 @@ def reset_state():
 async def main():
     reset_state()  # Reset at the start of main
     print("Starting AI Agent...")
-    print("This agent can solve mathematical problems and create visual presentations.")
+    print("This agent can solve mathematical problems, create visual presentations, and share results via email.")
     print("It analyzes and selects from available tools to accomplish each task.")
     print("For visualization, it will identify appropriate tools for each step of the process.")
+    print("For sharing results, it can send emails with calculation outcomes when requested.")
     
     print("\nExample queries you can try:")
     print("1. Find the ASCII values of characters in HELLO and then return sum of exponentials of those values.")
@@ -77,8 +78,14 @@ async def main():
     print("   - Identify and select a tool to open a presentation application")
     print("   - Find appropriate tools to create visual elements")
     print("   - Select tools to add content to the visualization")
+    print("5. For email tasks, it will:")
+    print("   - Complete all calculations and/or visualizations first")
+    print("   - Format the results in a clear, readable manner")
+    print("   - Send an email containing the results to the configured recipient")
     print(f"The agent will perform up to {max_iterations} iterations to complete the task.")
     print("You can include preferences in your query (e.g., 'small', 'centered', 'detailed').")
+    print("\nNote: To use email functionality, make sure to configure GMAIL_EMAIL, GMAIL_APP_PASSWORD,")
+    print("and RECIPIENT_EMAIL in your .env file with valid credentials.")
     
     try:
         # Create a single MCP server connection
@@ -208,7 +215,7 @@ Your entire response should be a single line starting with either FUNCTION_CALL:
                 # Get user query
                 print("\nEnter your query (or use default if empty):")
                 user_query = input().strip()
-                query = user_query if user_query else "Find the ASCII values of characters in INDIA and then return sum of exponentials of those values and create a visual presentation of the result"
+                query = user_query if user_query else "Find the ASCII values of characters in MODEL_CONTEXT_PROTOCOL and then return sum of exponentials of those values and create a visual presentation of the result and share the results via email"
                 print(f"\nProcessing query: {query}")
                 print("Starting the agent's decision-making process...")
                 
