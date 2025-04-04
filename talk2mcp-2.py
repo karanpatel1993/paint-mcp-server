@@ -57,22 +57,22 @@ async def main():
     print("Starting AI Agent with Keynote integration...")
     print("This agent can solve mathematical problems and visualize results in Keynote.")
     print("It can perform calculations, manipulate text, and display results visually.")
-    print("The agent can open Keynote, create shapes, and add text to visualize your results.")
+    print("The agent can open applications, create visual elements, and add text to visualize results.")
     
     print("\nExample queries you can try:")
     print("1. Find the ASCII values of characters in HELLO and then return sum of exponentials of those values.")
-    print("2. Calculate the fibonacci sequence for n=10 and visualize it in Keynote.")
-    print("3. Calculate 24 factorial and display the result in a Keynote presentation.")
-    print("4. What is the sine of 45 degrees? Show this in Keynote.")
-    print("5. Find the remainder when 2^10 is divided by 7 and visualize it in Keynote.")
-    print("6. Calculate the factorial of 10 and show it in a small centered rectangle in Keynote.")
-    print("\nNote: For visualization queries, the agent will make multiple function calls in sequence:")
-    print("- First to perform calculations")
-    print("- Then to open Keynote")
-    print("- Then to create a rectangle")
-    print("- Finally to add text with the result")
-    print("For visualization queries, you need at least 5 iterations (calculations + 3 Keynote steps).")
-    print("You can also request specific rectangle sizes/positions by including terms like 'small', 'centered', etc.")
+    print("2. Calculate the fibonacci sequence for n=10 and create a visual presentation of the result.")
+    print("3. Calculate 24 factorial and display the answer visually.")
+    print("4. What is the sine of 45 degrees? Create a visual presentation of this result.")
+    print("5. Find the remainder when 2^10 is divided by 7 and show it in a presentation.")
+    print("6. Calculate the factorial of 10 and display it in a small centered visual element.")
+    print("\nNote: For visualization queries, the agent will approach the task step by step:")
+    print("- First performing calculations")
+    print("- Then opening an appropriate application")
+    print("- Creating a visual container for the result")
+    print("- Adding informative text")
+    print("For visualization queries, you need several iterations to complete all steps.")
+    print("You can include presentation preferences in your query (e.g., 'small', 'centered', 'detailed').")
     
     # Get max iterations from user
     global max_iterations
@@ -160,14 +160,15 @@ You must respond with EXACTLY ONE line in one of these formats (no additional te
 Important:
 - When a function returns multiple values, you need to process all of them
 - Only give FINAL_ANSWER when you have completed all necessary calculations
-- To visualize results in Keynote, use these function calls in sequence:
-  1. First call open_keynote to create a blank Keynote document
-  2. Then call add_rectangle_to_keynote with coordinates (x1,y1,x2,y2)
-  3. Finally call add_text_to_keynote with your text content
-- For the rectangle, use these guidelines:
-  * Create a moderately sized rectangle (approx. 300x200 pixels)
-  * Center it on the slide (around position 500,350)
-  * Example coordinates: x1=350, y1=250, x2=650, y2=450
+- When visualizing results, consider a general approach:
+  1. First open the appropriate application to host your visualization
+  2. Find or create a suitable area to display the content (like a shape or container)
+  3. Add the relevant information as text so the user can see the results
+- When adding visual elements, try to make them:
+  * Appropriately sized (not too large or small)
+  * Well-positioned (centered or aligned properly)
+  * Clear and readable (with descriptive text)
+- Your available tools include functions to work with Apple Keynote
 - When adding text, make sure it includes both the answer and any relevant explanation
 - Do not repeat function calls with the same parameters
 
@@ -180,14 +181,13 @@ Examples:
 - FINAL_ANSWER: [42]
 
 Query Analysis:
-- If the query contains words like "keynote", "visualize", "show", "display", "presentation", use the Keynote functions in sequence
+- If the query mentions visualization or presentation, consider how to visually represent the result
 - If the query is only about calculations without mentioning visualization, use FINAL_ANSWER
-- Always perform the necessary calculations first using mathematical FUNCTION_CALLs before visualizing
-- Pay attention to rectangle size and position requests:
-  * If the query mentions "small" rectangle, use dimensions around 300x200 pixels
-  * If the query mentions "centered" or "center", place the rectangle in the center of the slide
-  * If the query mentions "large", use dimensions around 600x400 pixels
-  * Default position should be in the center of the slide (around 500,350)
+- Always perform the necessary calculations first before attempting any visualization
+- Listen for cues about presentation preferences:
+  * Size preferences like "small" or "large"
+  * Position preferences like "centered" or "at the top"
+  * Style preferences like "simple" or "detailed"
 
 DO NOT include any explanations or additional text.
 Your entire response should be a single line starting with either FUNCTION_CALL: or FINAL_ANSWER:"""
@@ -195,7 +195,7 @@ Your entire response should be a single line starting with either FUNCTION_CALL:
                 # Get user query
                 print("\nEnter your query (or use default if empty):")
                 user_query = input().strip()
-                query = user_query if user_query else "Find the ASCII values of characters in INDIA and then return sum of exponentials of those values and visualize them in a small centered rectangle in Keynote"
+                query = user_query if user_query else "Find the ASCII values of characters in INDIA and then return sum of exponentials of those values and create a visual presentation of the result"
                 print(f"\nProcessing query: {query}")
                 print("Starting iteration loop...")
                 
@@ -308,12 +308,13 @@ Your entire response should be a single line starting with either FUNCTION_CALL:
                             
                             # Provide more context when Keynote functions are called
                             if func_name == "open_keynote":
-                                print("\n=== Starting Keynote Visualization Process ===")
-                                print("Step 1: Opening Keynote with a blank slide...")
+                                print("\n=== Starting Visualization Process ===")
+                                print("Opening presentation application...")
                                 
                                 iteration_response.append(
-                                    f"In iteration {iteration + 1}, I opened Keynote with a blank slide. The function returned: {result_str}. "
-                                    f"Now I'll create a rectangle to display the result."
+                                    f"In iteration {iteration + 1}, I opened a presentation application to prepare for visualization. "
+                                    f"The function returned: {result_str}. "
+                                    f"Next, I'll create an appropriate visual element to display the result."
                                 )
                             elif func_name == "add_rectangle_to_keynote":
                                 # Calculate rectangle size and position
@@ -326,23 +327,25 @@ Your entire response should be a single line starting with either FUNCTION_CALL:
                                 center_x = x1 + width/2
                                 center_y = y1 + height/2
                                 
-                                print(f"Step 2: Creating a rectangle for the visualization...")
+                                print("Creating visual container for the result...")
                                 print(f"   Size: {width}x{height} pixels")
                                 print(f"   Position: centered at ({center_x}, {center_y})")
                                 
                                 iteration_response.append(
-                                    f"In iteration {iteration + 1}, I created a rectangle in Keynote with dimensions {width}x{height} "
-                                    f"centered at coordinates ({center_x}, {center_y}). "
-                                    f"The function returned: {result_str}. Now I'll add text to the rectangle."
+                                    f"In iteration {iteration + 1}, I created a visual container with dimensions {width}x{height} "
+                                    f"at position ({center_x}, {center_y}). "
+                                    f"The function returned: {result_str}. "
+                                    f"Now I'll add the result text to this container."
                                 )
                             elif func_name == "add_text_to_keynote":
-                                print("Step 3: Adding text with the result...")
+                                print("Adding result text to the visual container...")
                                 print(f"   Text: '{arguments.get('text', '')}'")
-                                print("\n=== Keynote Visualization Complete ===")
+                                print("\n=== Visualization Complete ===")
                                 
                                 iteration_response.append(
-                                    f"In iteration {iteration + 1}, I added the text '{arguments.get('text', 'unknown')}' to the rectangle. "
-                                    f"The function returned: {result_str}. The visualization in Keynote is now complete."
+                                    f"In iteration {iteration + 1}, I added the text '{arguments.get('text', 'unknown')}' to the visual container. "
+                                    f"The function returned: {result_str}. "
+                                    f"The visualization is now complete and displays the result."
                                 )
                             else:
                                 # Default response for other function calls
@@ -366,10 +369,10 @@ Your entire response should be a single line starting with either FUNCTION_CALL:
                         # Extract the final answer
                         _, answer = response_text.split(":", 1)
                         print(f"Final Answer: {answer}")
-                        print("\nTo visualize this result in Keynote, try a new query like:")
-                        print(f"'Visualize the result {answer.strip()} in Keynote'")
-                        print(f"'Show {answer.strip()} in a small centered rectangle in Keynote'")
-                        print(f"'Display {answer.strip()} in a Keynote presentation with a centered rectangle'")
+                        print("\nTo visualize this result, try a new query like:")
+                        print(f"'Create a visual presentation of {answer.strip()}'")
+                        print(f"'Display {answer.strip()} visually'")
+                        print(f"'Show this result in a presentation'")
                         break
                     
                     iteration += 1
