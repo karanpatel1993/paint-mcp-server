@@ -69,6 +69,10 @@ async def main():
     print("6. Calculate the factorial of 10 and display it visually in a small centered element.")
     print("7. Calculate the sum of the first 20 prime numbers and email me the result.")
     print("8. Compute 15! and create a visualization, then share the result via email.")
+    print("9. Calculate the sum of squares for the first 10 Fibonacci numbers and visualize it.")
+    print("10. Calculate the product of the first 5 cube roots and email the result.")
+    print("11. Compute the logarithm of the factorial of 7 and create a presentation.")
+    print("12. Calculate the tangent of 30 degrees, square it, and visualize the result.")
     print("\nHow the agent works:")
     print("1. It analyzes your query to understand what you're asking")
     print("2. It examines all available tools to identify the most appropriate ones")
@@ -180,6 +184,9 @@ You must respond with EXACTLY ONE line in one of these formats (no additional te
 Important:
 - When a function returns multiple values, you need to process all of them
 - Only give FINAL_ANSWER when you have completed all necessary calculations
+- For complex mathematical operations, consider whether multiple steps or tools are needed
+- Be careful to choose appropriate tools based on their descriptions, not just their names
+- The int_list_to_exponential_sum tool specifically calculates sum of e^x for each number, not other operations
 - When visualizing results, explore the available tools to find those that can:
   * Open presentation applications
   * Create visual elements
@@ -203,6 +210,9 @@ Examples:
 
 Query Analysis:
 - Carefully examine all available tools to understand their capabilities
+- Understand what each mathematical operation in the query requires
+- Consider whether a query needs multiple calculation steps before visualization
+- Match tool functions to their intended mathematical purpose
 - If the query mentions visualization or presentation, look for tools that can help with creating visuals
 - If the query is only about calculations without mentioning visualization, use FINAL_ANSWER
 - If the query contains terms like "share", "send", "email", or "notify", consider using email functionality
@@ -215,7 +225,7 @@ Your entire response should be a single line starting with either FUNCTION_CALL:
                 # Get user query
                 print("\nEnter your query (or use default if empty):")
                 user_query = input().strip()
-                query = user_query if user_query else "Find the ASCII values of characters in MODEL_CONTEXT_PROTOCOL and then return sum of exponentials of those values and create a visual presentation of the result and share the results via email"
+                query = user_query if user_query else "Find the remainder when 2^10 is divided by 7 and create a nice visualization and send and email"
                 print(f"\nProcessing query: {query}")
                 print("Starting the agent's decision-making process...")
                 
