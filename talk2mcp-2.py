@@ -225,7 +225,7 @@ Your entire response should be a single line starting with either FUNCTION_CALL:
                 # Get user query
                 print("\nEnter your query (or use default if empty):")
                 user_query = input().strip()
-                query = user_query if user_query else "Find the remainder when 2^10 is divided by 7 and create a nice visualization"
+                query = user_query if user_query else "Find the remainder when 2^10 is divided by 7 and send an email with the result"
                 print(f"\nProcessing query: {query}")
                 print("Starting the agent's decision-making process...")
                 
